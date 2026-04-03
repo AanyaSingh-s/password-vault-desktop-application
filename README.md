@@ -114,8 +114,3 @@ src/main/java/com/passwordvault/
 
 ---
 
-## 📜 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🤝 Contributing
-Contributions are welcome! If you'd like to improve the encryption layer, enhance the UI, or add new data services, please feel free to fork and PR.

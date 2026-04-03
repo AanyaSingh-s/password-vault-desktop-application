@@ -1,48 +1,121 @@
-# Password Vault Desktop Application
+# 🔐 Password Vault Desktop Application
 
-A highly secure, role-based password management system built with Java and Swing. This project demonstrates a modular architecture with a clear separation of concerns across five core development roles.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Java Version](https://img.shields.io/badge/Java-1.8%2B-blue.svg)](https://www.oracle.com/java/technologies/javase-downloads.html)
+[![Maven](https://img.shields.io/badge/Build-Maven-orange.svg)](https://maven.apache.org/)
 
-## 🔐 Security Features
+A professional, role-based password management system designed for maximum security and modularity. This application implements industry-standard encryption protocols and a clean, persona-driven architecture.
 
-- **AES-256 Encryption:** All stored passwords are encrypted using the standard Java Cryptography Extension (JCE).
-- **BCrypt Hashing:** User authentication is secured with salted BCrypt hashes.
-- **SQLite Persistence:** Lightweight, portable database management.
-- **Session Management:** Secure tracking of user sessions and logout flows.
-- **Audit Logging:** Security events are logged for accountability.
+---
 
-## 🏛️ Project Architecture (Persona-Based)
+## 🏗️ Role-Based Architecture (The "Team of 5" Model)
 
-The codebase is divided into five distinct modules, each representing a developer role:
+This project was developed by redistributing logic across five distinct developer personas, each responsible for a critical layer of the application:
 
-1.  **Infrastructure (Person 1):** Database schema, connection management, and AES-256 encryption foundation.
-2.  **Authentication (Person 2):** User registration, login, BCrypt hashing, and session management.
-3.  **Core Management (Person 3):** Password entry CRUD operations, secure password generation, and category management.
-4.  **Data Services (Person 4):** Advanced search with relevance scoring, filtering, and encrypted Export/Import functionality.
-5.  **GUI & UX (Person 5):** Desktop interface featuring separate Login, Registration, and Dashboard windows.
+### 🛠️ Person 1: Infrastructure & Database Architect (25%)
+**Focus:** Foundation, Database Schema, and Core Security.
+- **SQLite Schema:** Designed a normalized database with indices for high-performance lookups.
+- **AES-256 Encryption:** Implemented high-level password storage using the standard **Java Cryptography Extension (JCE)**.
+- **BaseDAO:** Created an abstract persistence layer for consistent data access.
+
+### 🔑 Person 2: Authentication & Security Specialist (20%)
+**Focus:** User Identity, Sessions, and BCrypt Hashing.
+- **BCrypt Hashing:** Implemented salted password hashing for user accounts.
+- **Session Management:** Developed a thread-safe singleton for tracking active user states.
+- **Audit Logging:** Integrated a security event tracker that records every login/action.
+
+### 📂 Person 3: Core Password Core Developer (20%)
+**Focus:** Business Logic, CRUD, and Generation.
+- **Secure CRUD:** Developed the primary service for adding, viewing, and deleting sensitive entries.
+- **Password Generator:** Integrated a cryptographically secure random password generator.
+- **Model Design:** Crafted the `PasswordEntry` and `Category` data models with validation.
+
+### 🔍 Person 4: Data Management & Reporting (20%)
+**Focus:** Advanced Search, Filtering, and Portability.
+- **Search Engine:** Built a full-text search engine with relevance scoring (Website > Username).
+- **Export/Import:** Created an encrypted custom file format for secure data migration.
+- **Dynamic Filters:** Developed a builder for complex category and date-based filtering.
+
+### 🎨 Person 5: UX/UI & Frontend Developer (25%)
+**Focus:** Swing GUI, Responsive Design, and User Flow.
+- **Modular Windows:** Designed specialized screens for Login, Registration, and the Main Dashboard.
+- **UI Consistency:** Implemented a `DialogFactory` for unified styling and solid-colored buttons.
+- **Responsive Layouts:** Ensured a clean, intuitive experience across different window sizes.
+
+---
+
+## 🛡️ Security Implementation
+
+| Layer | Technology | Purpose |
+| :--- | :--- | :--- |
+| **User Auth** | BCrypt (Cost: 12) | Irreversible hashing for master passwords. |
+| **Data Storage** | AES-256 (JCE) | Encryption of website credentials. |
+| **Persistence** | SQLite | Local, encrypted file-based database. |
+| **Integrity** | PRAGMA Foreign Keys | Enforcing data relationships in the vault. |
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- JDK 1.8 or higher
-- Apache Maven
+- JDK 1.8 or higher.
+- Apache Maven 3.x.
 
-### Installation & Run
-1.  **Extract/Clone** the repository.
-2.  Navigate to the project directory.
-3.  **Build and Run:**
-    ```bash
-    mvn clean compile
-    mvn exec:java
-    ```
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/AanyaSingh-s/password-vault-desktop-application.git
+   ```
+2. Navigate to the root directory:
+   ```bash
+   cd "password vault desktop application"
+   ```
+3. Build and Run:
+   ```bash
+   mvn clean compile exec:java
+   ```
 
-### Usage
-- **Registration:** New users must click "Register" to create a local vault account.
-- **Logging In:** Use your credentials to access the secure dashboard.
-- **Adding Entries:** Click "+ Add New" to store a website, username, and password. Data is encrypted instantly using AES-256.
+### First-Time Use
+1. **Register:** Launch the app and click **Register** to create your local master account.
+2. **Login:** Enter your credentials to unlock the vault.
+3. **Manage:** Start adding your website credentials. Everything is encrypted on-the-fly.
 
-## 📁 Package Structure
-- `com.passwordvault.infrastructure`: Database and Encryption Foundation
-- `com.passwordvault.auth`: Security and User Management
-- `com.passwordvault.core`: Main Password Management Logic
-- `com.passwordvault.data`: Search and Data Export Services
-- `com.passwordvault.ui`: Swing-based User Interface Components
+---
+
+## 📂 Project Structure
+
+```text
+src/main/java/com/passwordvault/
+├── infrastructure/         # Person 1 (Foundation)
+│   ├── db/                 # Connection & Schema Management
+│   ├── security/           # AES-256 implementation
+│   ├── data/               # BaseDAO abstraction
+│   └── exception/          # Centralized error handling
+├── auth/                   # Person 2 (Security & Identity)
+│   ├── dao/                # User persistence
+│   ├── service/            # Login/Registration flows
+│   ├── security/           # BCrypt logic
+│   ├── logging/            # Audit tracking
+│   ├── session/            # Session lifecycle
+│   └── util/               # Password validation
+├── core/                   # Person 3 (Business Logic)
+│   ├── model/              # Core data models
+│   ├── dao/                # Password entry persistence
+│   └── service/            # High-level password operations
+├── data/                   # Person 4 (Reporting)
+│   ├── service/            # Search & Portability (Export/Import)
+│   └── util/               # Advanced filtering builders
+└── ui/                     # Person 5 (Presentation)
+    ├── LoginWindow.java    # Authentication screen
+    ├── MainWindow.java     # Primary dashboard
+    ├── DialogFactory.java  # UI utility factory
+    └── PasswordVaultApp.java # Entry point
+```
+
+---
+
+## 📜 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+Contributions are welcome! If you'd like to improve the encryption layer, enhance the UI, or add new data services, please feel free to fork and PR.

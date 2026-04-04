@@ -1,0 +1,76 @@
+# My Contributions — Password Vault Desktop Application
+
+## What I Built
+
+I was responsible for the **User Interface (UI/UX) layer** of the application. This includes designing and implementing all user-facing components using Java Swing, ensuring a smooth, intuitive, and consistent user experience across the entire application.
+
+---
+
+## 1. UI/UX Layer
+
+**Package:** `com.passwordvault.ui`
+
+This layer is responsible for all visual components and user interaction. It acts as the bridge between the user and the backend services, ensuring usability, responsiveness, and clarity.
+
+### `LoginWindow` (`ui/`)
+- Designed the login interface for user authentication
+- Handles user input for username and password
+- Connects with the authentication service for login validation
+- Displays success/error dialogs based on login attempts
+
+### `MainWindow` (`ui/`)
+- Developed the main dashboard of the application
+- Displays stored password entries in an organized format
+- Provides options for adding, deleting, and managing credentials
+- Ensures intuitive navigation and smooth user workflow
+
+### `DialogFactory` (`ui/`)
+- Centralized utility for creating dialogs (alerts, confirmations, errors)
+- Ensures consistent UI styling across all popups
+- Reduces code duplication and improves maintainability
+
+### `PasswordVaultApp` (`ui/`)
+- Entry point of the application
+- Initializes UI components and launches the application
+- Manages application startup flow
+
+---
+
+## Key Design Decisions
+
+**Modular UI Structure** — Each screen (Login, Dashboard) is separated into its own class, improving readability and maintainability.
+
+**Centralized Dialog Handling** — `DialogFactory` ensures all dialogs follow a consistent design pattern.
+
+**Separation of Concerns** — UI layer strictly handles presentation logic and delegates business logic to service layers.
+
+**Responsive Layouts** — Used layout managers to ensure the interface adapts to different window sizes.
+
+---
+
+## Technologies I Used
+
+- Java Swing (GUI Development)
+- AWT Layout Managers (Layout Management)
+- Java Event Handling (User Interaction)
+
+---
+
+## Files I Own
+
+```
+src/main/java/com/passwordvault/ui/
+├── LoginWindow.java
+├── MainWindow.java
+├── DialogFactory.java
+└── PasswordVaultApp.java
+```
+
+---
+
+## Outcome
+
+- Built a clean and user-friendly interface  
+- Improved overall user experience and usability  
+- Ensured consistent design across the application  
+- Enabled smooth interaction between users and backend services  

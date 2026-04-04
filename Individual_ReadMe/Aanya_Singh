@@ -1,1 +1,166 @@
+# My Contributions — Password Vault Desktop Application
 
+## What I Built
+
+I was responsible for three key areas of the application: the **Infrastructure layer** (the foundation everything else runs on), the **Authentication module** (user registration, login, sessions, and security), and the **Core DAO layer** (database persistence for categories and password entries).
+
+---
+
+## 1. Infrastructure Layer
+
+**Package:** `com.passwordvault.infrastructure`
+
+This is the lowest-level layer of the application. Every other module depends on it. It handles database connectivity, encryption, and error handling.
+
+### `DatabaseManager` (`infrastructure/db/`)
+- Singleton that owns the single SQLite connection (`passwordvault.db`)
+- Enables SQLite foreign key support via `PRAGMA foreign_keys = ON` on every connection
+- Reads and executes `DatabaseSchema.sql` from the classpath on `initialize()` to set up all tables and indexes
+- Exposes `getConnection()` which reopens the connection automatically if it was closed
+
+### `BaseDAO` (`infrastructure/data/`)
+- Abstract base class extended by every DAO in the project — including my own `CategoryDAO`, `PasswordEntryDAO`, and the auth team's `UserDAO`
+- Provides a shared `getConnection()` delegate to `DatabaseManager` and a `closeResources()` utility to safely close `ResultSet`, `PreparedStatement` in one call
+
+### `EncryptionManager` (`infrastructure/security/`)
+- Implements **AES-256-CBC with PKCS5 padding** for encrypting password entries
+- Key derivation uses **PBKDF2WithHmacSHA256** with 65,536 iterations and a 256-bit key — no hardcoded keys
+- `encrypt(data, masterPassword, saltHex)` — generates a random 16-byte IV, prepends it to the ciphertext, and returns a Base64 string
+- `decrypt(encryptedData, masterPassword, saltHex)` — extracts the IV from the front of the blob and decrypts
+- `generateSalt()` — produces a cryptographically secure 16-byte hex salt via `SecureRandom`
+
+### `ExceptionHandler` (`infrastructure/exception/`)
+- Provides a static `handle(Throwable, context)` method for consistent logging across the app
+- Defines a typed exception hierarchy: `VaultException → CryptoException` and `VaultException → DatabaseException`, so callers can catch at the right granularity
+
+### Database Schema (`resources/DatabaseSchema.sql`)
+Designed and owns all four tables:
+
+| Table | Purpose |
+|---|---|
+| `users` | Stores username, bcrypt hash, and encryption salt |
+| `categories` | User-scoped label groups for organizing entries |
+| `password_entries` | Encrypted credential records (website, username, password) |
+| `audit_logs` | Timestamped record of all security-relevant actions |
+
+Performance indexes on `password_entries(user_id)`, `password_entries(website)`, and `audit_logs(user_id)` are included in the schema.
+
+---
+
+## 2. Authentication Module
+
+**Package:** `com.passwordvault.auth`
+
+Handles everything related to who is using the app — registration, login, session state, security event logging, and password validation.
+
+### `UserDAO` (`auth/dao/`)
+- Extends `BaseDAO`
+- `createUser(username, passwordHash, salt)` — inserts a new user row using a `PreparedStatement` to prevent SQL injection
+- `getUserByUsername(username)` — returns a `UserRecord` (inner record class holding `id`, `username`, `passwordHash`, `salt`) or `null` if not found
+
+### `AuthenticationService` (`auth/service/`)
+- Coordinates registration and login flows
+- **Register:** checks for duplicate username → generates a salt via `EncryptionManager.generateSalt()` → hashes the password via `BcryptPasswordEncoder` → persists via `UserDAO`
+- **Login:** fetches the user record → verifies the submitted password against the stored bcrypt hash via `BcryptPasswordEncoder.matches()` → returns the `UserRecord` on success, `null` on failure
+
+### `BcryptPasswordEncoder` (`auth/security/`)
+- Wraps the `at.favre.lib:bcrypt:0.9.0` library
+- BCrypt cost factor set to **12** (computationally expensive by design — resistant to brute-force)
+- `encode(password)` — hashes a plaintext password
+- `matches(password, encodedPassword)` — constant-time verification
+
+### `SessionManager` (`auth/session/`)
+- Singleton holding the currently authenticated `UserRecord`
+- `setCurrentUser()`, `getCurrentUser()`, `isLoggedIn()`, `logout()` — simple state management for the duration of the app session
+- Used by `AuditLogger` to associate log entries with the active user
+
+### `AuditLogger` (`auth/logging/`)
+- Logs security events (login, logout, add/delete entry, etc.) directly into the `audit_logs` table
+- Pulls the current `user_id` from `SessionManager` automatically — callers only need to pass the action string
+- Falls back to `user_id = -1` for unauthenticated events
+
+### `PasswordValidator` (`auth/util/`)
+- Scores password strength on a point system (length, lowercase, uppercase, digits, special characters)
+- Returns one of four `PasswordStrength` enum values: `WEAK`, `FAIR`, `GOOD`, `STRONG`
+- Used in the registration UI to give real-time feedback
+
+---
+
+## 3. Core DAO Layer
+
+**Package:** `com.passwordvault.core.dao`
+
+I built the persistence layer for the two main domain objects — categories and password entries. Both extend `BaseDAO` from the infrastructure layer.
+
+### `CategoryDAO` (`core/dao/`)
+- `create(Category)` — inserts a new category row and writes the generated `id` back into the passed `Category` object using `RETURN_GENERATED_KEYS`
+- `getByUserId(int userId)` — returns all categories belonging to the current user as a `List<Category>`
+- Each category maps to the `Category` model: `id`, `userId`, `name`, `description`
+
+### `PasswordEntryDAO` (`core/dao/`)
+- Full **CRUD** implementation for password entries
+- `create(PasswordEntry)` — inserts a new entry (website, username, encrypted password, categoryId, notes) and writes back the generated `id`
+- `getAllByUserId(int userId)` — fetches all entries for the logged-in user, including `created_date` and `updated_date` timestamps
+- `update(PasswordEntry)` — updates all mutable fields and sets `updated_date = CURRENT_TIMESTAMP` atomically in SQL
+- `delete(int id)` — removes an entry by primary key
+- Passwords are stored **already encrypted** — `PasswordEntryDAO` never sees plaintext; encryption/decryption happens in the service layer before reaching this DAO
+
+---
+
+## Key Design Decisions
+
+**Single DB connection via singleton** — `DatabaseManager` uses a synchronized singleton with a lazy-reconnect guard (`isClosed()` check) rather than a connection pool. Appropriate for a single-user desktop app with no concurrency.
+
+**Salt stored separately from the bcrypt hash** — The `salt` column in `users` is the AES key-derivation salt (used by `EncryptionManager`), while the bcrypt hash is self-salted internally by the BCrypt library. They serve different purposes and are never mixed.
+
+**DAOs never handle plaintext passwords** — `PasswordEntryDAO` only stores and retrieves the `password_encrypted` string. The responsibility for calling `EncryptionManager.encrypt/decrypt` sits in the service layer above.
+
+**Typed exception hierarchy** — `VaultException`, `CryptoException`, and `DatabaseException` let upper layers catch failures at the right level without swallowing unrelated exceptions.
+
+---
+
+## Dependencies I Used
+
+```xml
+<!-- BCrypt hashing -->
+<dependency>
+    <groupId>at.favre.lib</groupId>
+    <artifactId>bcrypt</artifactId>
+    <version>0.9.0</version>
+</dependency>
+
+<!-- SQLite JDBC -->
+<dependency>
+    <groupId>org.xerial</groupId>
+    <artifactId>sqlite-jdbc</artifactId>
+    <version>3.45.1.0</version>
+</dependency>
+```
+
+AES-256-CBC encryption uses the standard **JCE** bundled with the JDK — no extra dependency needed.
+
+---
+
+## Files I Own
+
+```
+src/main/java/com/passwordvault/
+├── infrastructure/
+│   ├── db/DatabaseManager.java
+│   ├── data/BaseDAO.java
+│   ├── security/EncryptionManager.java
+│   └── exception/ExceptionHandler.java
+├── auth/
+│   ├── dao/UserDAO.java
+│   ├── service/AuthenticationService.java
+│   ├── security/BcryptPasswordEncoder.java
+│   ├── session/SessionManager.java
+│   ├── logging/AuditLogger.java
+│   └── util/PasswordValidator.java
+└── core/
+    └── dao/
+        ├── CategoryDAO.java
+        └── PasswordEntryDAO.java
+src/main/resources/
+    └── DatabaseSchema.sql
+```

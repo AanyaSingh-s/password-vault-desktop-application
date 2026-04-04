@@ -1,42 +1,39 @@
 # 🔐 Password Vault Desktop Application
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Java Version](https://img.shields.io/badge/Java-1.8%2B-blue.svg)](https://www.oracle.com/java/technologies/javase-downloads.html)
-[![Maven](https://img.shields.io/badge/Build-Maven-orange.svg)](https://maven.apache.org/)
 
 A professional, role-based password management system designed for maximum security and modularity. This application implements industry-standard encryption protocols and a clean, persona-driven architecture.
 
 ---
 
-## 🏗️ Role-Based Architecture (The "Team of 5" Model)
+## 🏗️ Architecture 
 
 This project was developed by redistributing logic across five distinct developer personas, each responsible for a critical layer of the application:
 
-### 🛠️ Person 1: Infrastructure & Database Architect (25%)
+### 🛠️ Infrastructure & Database Architect
 **Focus:** Foundation, Database Schema, and Core Security.
 - **SQLite Schema:** Designed a normalized database with indices for high-performance lookups.
 - **AES-256 Encryption:** Implemented high-level password storage using the standard **Java Cryptography Extension (JCE)**.
 - **BaseDAO:** Created an abstract persistence layer for consistent data access.
 
-### 🔑 Person 2: Authentication & Security Specialist (20%)
+### 🔑 Authentication & Security Specialist 
 **Focus:** User Identity, Sessions, and BCrypt Hashing.
 - **BCrypt Hashing:** Implemented salted password hashing for user accounts.
 - **Session Management:** Developed a thread-safe singleton for tracking active user states.
 - **Audit Logging:** Integrated a security event tracker that records every login/action.
 
-### 📂 Person 3: Core Password Core Developer (20%)
+### 📂 Core Password Core Development
 **Focus:** Business Logic, CRUD, and Generation.
 - **Secure CRUD:** Developed the primary service for adding, viewing, and deleting sensitive entries.
 - **Password Generator:** Integrated a cryptographically secure random password generator.
 - **Model Design:** Crafted the `PasswordEntry` and `Category` data models with validation.
 
-### 🔍 Person 4: Data Management & Reporting (20%)
+### 🔍 Data Management & Reporting 
 **Focus:** Advanced Search, Filtering, and Portability.
 - **Search Engine:** Built a full-text search engine with relevance scoring (Website > Username).
 - **Export/Import:** Created an encrypted custom file format for secure data migration.
 - **Dynamic Filters:** Developed a builder for complex category and date-based filtering.
 
-### 🎨 Person 5: UX/UI & Frontend Developer (25%)
+### 🎨 UX/UI & Frontend Development
 **Focus:** Swing GUI, Responsive Design, and User Flow.
 - **Modular Windows:** Designed specialized screens for Login, Registration, and the Main Dashboard.
 - **UI Consistency:** Implemented a `DialogFactory` for unified styling and solid-colored buttons.
@@ -48,7 +45,7 @@ This project was developed by redistributing logic across five distinct develope
 
 | Layer | Technology | Purpose |
 | :--- | :--- | :--- |
-| **User Auth** | BCrypt (Cost: 12) | Irreversible hashing for master passwords. |
+| **User Auth** | BCrypt  | Irreversible hashing for master passwords. |
 | **Data Storage** | AES-256 (JCE) | Encryption of website credentials. |
 | **Persistence** | SQLite | Local, encrypted file-based database. |
 | **Integrity** | PRAGMA Foreign Keys | Enforcing data relationships in the vault. |

@@ -83,26 +83,26 @@ This project was developed by redistributing logic across five distinct develope
 
 ```text
 src/main/java/com/passwordvault/
-├── infrastructure/         # Person 1 (Foundation)
+├── infrastructure/         # (Foundation)
 │   ├── db/                 # Connection & Schema Management
 │   ├── security/           # AES-256 implementation
 │   ├── data/               # BaseDAO abstraction
 │   └── exception/          # Centralized error handling
-├── auth/                   # Person 2 (Security & Identity)
+├── auth/                   # (Security & Identity)
 │   ├── dao/                # User persistence
 │   ├── service/            # Login/Registration flows
 │   ├── security/           # BCrypt logic
 │   ├── logging/            # Audit tracking
 │   ├── session/            # Session lifecycle
 │   └── util/               # Password validation
-├── core/                   # Person 3 (Business Logic)
+├── core/                   # (Business Logic)
 │   ├── model/              # Core data models
 │   ├── dao/                # Password entry persistence
 │   └── service/            # High-level password operations
-├── data/                   # Person 4 (Reporting)
+├── data/                   # (Reporting)
 │   ├── service/            # Search & Portability (Export/Import)
 │   └── util/               # Advanced filtering builders
-└── ui/                     # Person 5 (Presentation)
+└── ui/                     # (Presentation)
     ├── LoginWindow.java    # Authentication screen
     ├── MainWindow.java     # Primary dashboard
     ├── DialogFactory.java  # UI utility factory
